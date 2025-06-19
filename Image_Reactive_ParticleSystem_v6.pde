@@ -1,4 +1,4 @@
-import processing.sound.*;
+  import processing.sound.*;
 PImage img;
 PGraphics revealMask, glowLayer, trailLayer;
 SoundFile music;
@@ -12,21 +12,49 @@ int currentIndex = 0;
 
 // Asset arrays for 12 compositions
 String[] images = {
-  "abandoned_house.jpg", "chernobyl_chimney.jpg", "chernobyl_cleaning.jpg", "chernobyl_cleaning_2.jpg",
-  "iceland_aurora.jpg", "iceland_beach.jpg", "joker_sit.jpg", "joker_smile.jpg",
-  "joker_stairs.jpg", "iceland_volcano.jpg", "iceland_glacier.jpg", "iceland_waterfall.jpg"
+  "chernobyl_chimney.jpg",       // 12_hours_before
+  "chernobyl_cleaning.jpg",      // bridge_of_death
+  "chernobyl_cleaning_2.jpg",    // the_door
+  "iceland_boat_2.jpg",            // a_deal_with_chaos
+  "joker_sit.jpg",               // call_me_joker
+  "iceland_snow.jpg",                // into_warmer_air
+  "joker_stairs.jpg",            // its_showtime
+  "joker_smile.jpg",             // bathroom_dance
+  "iceland_airplane.jpg",            // elevation
+  "iceland_glacier.jpg",         // lidur
+  "iceland_waterfall.jpg",       // folk_faer_andlit
+  "iceland_aurora.jpg"           // ascent (solo)
 };
 
 String[] audioFiles = {
-  "elevation.mp3", "12_hours_before.mp3", "bridge_of_death.mp3", "the_door.mp3",
-  "ascent.mp3", "bathroom_dance.mp3", "its_showtime.mp3", "into_warmer_air.mp3",
-  "call_me_joker.mp3", "a_deal_with_chaos.mp3", "lidur.mp3", "folk_faer_andlit.mp3"
+  "12_hours_before.mp3",
+  "bridge_of_death.mp3",
+  "the_door.mp3",
+  "a_deal_with_chaos.mp3",
+  "call_me_joker.mp3",
+  "into_warmer_air.mp3",
+  "its_showtime.mp3",
+  "bathroom_dance.mp3",
+  "elevation.mp3",
+  "lidur.mp3",
+  "folk_faer_andlit.mp3",
+  "ascent.mp3"
 };
 
+
 String[] compositionNames = {
-  "Elevation", "12 Hours Before", "Bridge of Death", "Finale",
-  "Ascent", "Building the Ship", "Under the Surface", "Orbital",
-  "Heyr Himnasmiður", "Liminal", "Erupting Light", "Fólk fær andlit"
+  "12 Hours Before",         // 0
+  "Bridge of Death",         // 1
+  "The Door",                // 2
+  "A Deal With Chaos",       // 3
+  "Call Me Joker",           // 4
+  "Into Warmer Air",         // 5
+  "It's Showtime",           // 6
+  "Bathroom Dance",          // 7
+  "Elevation",               // 8
+  "Lidur",                   // 9
+  "Fólk fær andlit",         // 10
+  "Ascent"                   // 11
 };
 
 float smoothedLevel = 0;
@@ -45,26 +73,38 @@ boolean beatDetected = false;
 int beatTimer = 0;
 
 enum ParticleType {
-  ELEVATION, INDUSTRIAL, DECAY, FINALE, ASCENT, ORGANIC, PSYCHOLOGICAL, ORBITAL,
-  SACRED, LIMINAL, VOLCANIC, FOLK
+  DECAY, INDUSTRIAL, ORBITAL, ORGANIC, PSYCHOLOGICAL, ASCENT, FINALE, VOLCANIC,
+  ELEVATION, LIMINAL, SACRED, FOLK
 }
 
 ArrayList<PVector> strategicPoints = new ArrayList<PVector>();
 float colorChangeThreshold = 120;
 
 color[][] palettes = {
-  {color(135, 206, 235), color(255, 255, 255), color(173, 216, 230), color(176, 196, 222)},
-  {color(255, 69, 0), color(105, 105, 105), color(255, 140, 0), color(169, 169, 169)},
-  {color(107, 142, 35), color(139, 69, 19), color(85, 107, 47), color(160, 82, 45)},
-  {color(138, 43, 226), color(255, 215, 0), color(75, 0, 130), color(255, 165, 0)},
-  {color(255, 215, 0), color(255, 140, 0), color(255, 165, 0), color(255, 69, 0)},
-  {color(34, 139, 34), color(0, 128, 0), color(50, 205, 50), color(124, 252, 0)},
-  {color(220, 20, 60), color(139, 0, 0), color(255, 0, 0), color(128, 0, 0)},
-  {color(25, 25, 112), color(72, 61, 139), color(123, 104, 238), color(147, 112, 219)},
-  {color(255, 215, 0), color(255, 255, 255), color(255, 248, 220), color(255, 228, 181)},
-  {color(255, 20, 147), color(0, 255, 255), color(186, 85, 211), color(64, 224, 208)},
-  {color(255, 0, 0), color(255, 69, 0), color(255, 140, 0), color(255, 165, 0)},
-  {color(139, 69, 19), color(34, 139, 34), color(210, 180, 140), color(107, 142, 35)}
+  // 0: 12_hours_before (chernobyl_chimney.jpg) - muted, cold, industrial
+  {color(90, 110, 130), color(180, 200, 210), color(60, 70, 80), color(220, 220, 220)},
+  // 1: bridge_of_death (chernobyl_cleaning.jpg) - toxic, danger, gray, yellow
+  {color(180, 180, 120), color(80, 80, 80), color(220, 200, 40), color(120, 120, 100)},
+  // 2: the_door (chernobyl_cleaning_2.jpg) - olive, rust, decay
+  {color(110, 120, 60), color(140, 90, 60), color(80, 100, 60), color(170, 120, 80)},
+  // 3: a_deal_with_chaos (iceland_boat.jpg) - deep blue, teal, cold, water
+  {color(30, 60, 110), color(40, 90, 120), color(80, 130, 170), color(180, 210, 220)},
+  // 4: call_me_joker (joker_sit.jpg) - purple, green, orange, chaos
+  {color(120, 40, 120), color(60, 160, 60), color(220, 120, 40), color(200, 40, 40)},
+  // 5: into_warmer_air (iceland_boat) - warm, sunrise, magenta, gold
+  {color(220, 120, 160), color(255, 200, 80), color(255, 140, 80), color(80, 80, 120)},
+  // 6: its_showtime (joker_stairs.jpg) - red, yellow, spotlight, drama
+  {color(200, 40, 40), color(255, 220, 80), color(80, 80, 80), color(255, 255, 255)},
+  // 7: bathroom_dance (joker_smile.jpg) - blue, violet, melancholy
+  {color(40, 60, 120), color(100, 80, 160), color(180, 140, 200), color(220, 200, 240)},
+  // 8: elevation (iceland_airplane) - sky, white, gold, clouds
+  {color(210, 230, 250), color(255, 255, 255), color(240, 220, 160), color(180, 200, 220)},
+  // 9: lidur (iceland_glacier.jpg) - glacier, pink, cyan, cold
+  {color(180, 220, 240), color(220, 140, 180), color(120, 200, 220), color(240, 220, 240)},
+  // 10: folk_faer_andlit (iceland_waterfall.jpg) - green, moss, water, earth
+  {color(60, 120, 60), color(120, 180, 100), color(80, 140, 120), color(180, 200, 180)},
+  // 11: ascent (iceland_aurora.jpg) - aurora, green, purple, night
+  {color(60, 200, 120), color(120, 80, 180), color(40, 40, 80), color(200, 240, 180)}
 };
 
 void setup() {
@@ -105,11 +145,20 @@ void setup() {
 
 void setCompositionStyle() {
   ParticleType[] types = {
-    ParticleType.ELEVATION, ParticleType.INDUSTRIAL, ParticleType.DECAY, ParticleType.FINALE,
-    ParticleType.ASCENT, ParticleType.ORGANIC, ParticleType.PSYCHOLOGICAL, ParticleType.ORBITAL,
-    ParticleType.SACRED, ParticleType.LIMINAL, ParticleType.VOLCANIC, ParticleType.FOLK
+    ParticleType.DECAY,           // 12_hours_before
+    ParticleType.INDUSTRIAL,      // bridge_of_death
+    ParticleType.DECAY,           // the_door
+    ParticleType.ORGANIC,         // a_deal_with_chaos
+    ParticleType.PSYCHOLOGICAL,   // call_me_joker
+    ParticleType.ASCENT,          // into_warmer_air
+    ParticleType.FINALE,          // its_showtime
+    ParticleType.PSYCHOLOGICAL,   // bathroom_dance
+    ParticleType.ELEVATION,       // elevation
+    ParticleType.LIMINAL,         // lidur
+    ParticleType.FOLK,            // folk_faer_andlit
+    ParticleType.ASCENT           // ascent
   };
-  int[] counts = {75, 100, 75, 125, 87, 75, 87, 75, 62, 75, 100, 75};
+  int[] counts = {38, 50, 38, 62, 43, 38, 43, 38, 31, 38, 50, 38};
   currentType = types[currentIndex];
   particleCount = counts[currentIndex];
   compositionPalette = palettes[currentIndex];
@@ -228,7 +277,7 @@ void draw() {
 
   // Beat flash effect
   if (beatTimer > 0) {
-    fill(255, 255, 255, map(beatTimer, 0, 10, 0, 30));
+    fill(255, 255, 255, map(beatTimer, 0, 5, 0, 15));
     rect(0, 0, width, height);
   }
 
